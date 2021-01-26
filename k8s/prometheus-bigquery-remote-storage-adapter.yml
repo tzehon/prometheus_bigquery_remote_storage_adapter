@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prom-bq-adapter
+spec:
+  selector:
+    matchLabels:
+      app: prom-bq-adapter-deployment
+  template:
+    metadata:
+      labels:
+        app: prom-bq-adapter-deployment
+    spec:
+      containers:
+        - name: "prometheus-storage-bigquery"
+          image: "gcr.io/tth-apm/prometheus_bigquery_remote_storage_adapter:latest"
+          env:
+            # - name: PROMBQ_GCP_JSON
+              # value: "/var/lib/mysecrets/super_secret.json"
+            - name: "PROMBQ_GCP_PROJECT_ID"
+              value: "tth-apm"
+            - name: "PROMBQ_GCP_JSON"
+              value: "/var/run/secret/cloud.google.com/tth-apm-c07e99d42509.json"
+            - name: PROMBQ_DATASET
+              value: "prometheus"
+            - name: PROMBQ_TABLE
+              value: "metrics_stream"
+            - name: PROMBQ_TIMEOUT
+              value: "2m"
+          volumeMounts:
+            - name: "service-account"
+              mountPath: "/var/run/secret/cloud.google.com"
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: "5"
+              memory: "500Mi"
+            requests:
+              cpu: "5"
+              memory: "500Mi"
+      volumes:
+        - name: "service-account"
+          secret:
+            secretName: "write-to-bq-sa-key"

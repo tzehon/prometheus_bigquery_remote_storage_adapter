@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bq-exporter-service
+spec:
+  selector:
+    app: prom-bq-adapter-deployment
+  type: NodePort
+  ports:
+  - name: exporterport
+    nodePort: 31900
+    protocol: TCP
+    port: 9201
+    targetPort: 9201
